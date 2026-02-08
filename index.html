@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine? 💕</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pacifico', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Floating hearts background */
+        .heart-bg {
+            position: fixed;
+            font-size: 30px;
+            opacity: 0.3;
+            animation: float 6s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Stage 1: Initial Question */
+        #stage1 {
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+
+        #stage1 h1 {
+            font-size: 48px;
+            margin-bottom: 50px;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .button-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 20px 50px;
+            font-size: 24px;
+            font-family: 'Pacifico', cursive;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #yesBtn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
+        }
+
+        #noBtn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            position: relative;
+        }
+
+        /* Stage 2: Game */
+        #stage2 {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #87CEEB 0%, #FFB6C1 100%);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-shadow: 3px 3px 0 #000;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid #ff69b4;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 182, 193, 0.9);
+        }
+
+        #gameStartScreen, #endScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #endScreen {
+            display: none;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+        }
+
+        .game-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 0 #000;
+            line-height: 1.5;
+        }
+
+        .game-subtitle {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0 #000;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            background: #ff69b4;
+            color: white;
+            border: 4px solid white;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 6px 0 #c1186b;
+            transition: all 0.1s;
+        }
+
+        .start-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #c1186b;
+        }
+
+        .heart {
+            display: inline-block;
+            animation: heartbeat 1s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        #instructions {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            margin-top: 20px;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            #stage1 h1 { font-size: 32px; }
+            .btn { padding: 15px 35px; font-size: 20px; }
+            .game-title { font-size: 16px; }
+            .game-subtitle { font-size: 14px; }
+            #ui { font-size: 10px; }
+            .start-btn { font-size: 12px; padding: 12px 24px; }
+            #instructions { font-size: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating hearts decoration -->
+    <div class="heart-bg" style="left: 10%; top: 20%; animation-delay: 0s;">💕</div>
+    <div class="heart-bg" style="left: 80%; top: 30%; animation-delay: 1s;">❤️</div>
+    <div class="heart-bg" style="left: 20%; top: 70%; animation-delay: 2s;">💖</div>
+    <div class="heart-bg" style="left: 85%; top: 60%; animation-delay: 3s;">💗</div>
+    <div class="heart-bg" style="left: 50%; top: 15%; animation-delay: 1.5s;">💝</div>
+
+    <div id="stage1">
+        <h1>Hi Chloe, Will You Be My Valentine? 💕</h1>
+        <div class="button-container">
+            <button class="btn" id="yesBtn">Yes! 💖</button>
+            <button class="btn" id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div id="stage2">
+        <div id="ui">
+            <div>HEARTS: <span id="hearts">3</span> <span class="heart">❤️</span></div>
+        </div>
+
+        <div id="gameStartScreen">
+            <h1 class="game-title">💕 SAVE YOUR VALENTINE! 💕</h1>
+            <h2 class="game-subtitle">Jump through obstacles<br>to rescue your prince!</h2>
+            <button class="start-btn" onclick="startGame()">START ADVENTURE</button>
+            <div id="instructions">
+                Use arrow keys or touch buttons<br>
+                ← → to move, ↑ to jump<br>
+                Avoid the obstacles!
+            </div>
+        </div>
+
+        <div id="endScreen">
+            <h1 class="game-title">💝 WE'RE VALENTINES NA YEHEY! 💝</h1>
+            <h2 class="game-subtitle">Thank you baby<br> Check under your bed! ^_^ <span class="heart">❤️</span></h2>
+            <button class="start-btn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="controls">
+            <div class="control-btn" id="leftBtn">◀</div>
+            <div class="control-btn" id="jumpBtn">▲</div>
+            <div class="control-btn" id="rightBtn">▶</div>
+        </div>
+    </div>
+
+    <script>
+
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        let noBtnClickCount = 0;
+
+        noBtn.addEventListener('mouseover', () => {
+            const maxX = window.innerWidth - noBtn.offsetWidth - 100;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 100;
+            
+            const randomX = Math.random() * maxX + 50;
+            const randomY = Math.random() * maxY + 50;
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            
+            const newSize = 1.1 + (noBtnClickCount * 0.1);
+            yesBtn.style.transform = `scale(${newSize})`;
+            noBtnClickCount++;
+        });
+
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const maxX = window.innerWidth - noBtn.offsetWidth - 100;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 100;
+            
+            const randomX = Math.random() * maxX + 50;
+            const randomY = Math.random() * maxY + 50;
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            
+            const newSize = 1.1 + (noBtnClickCount * 0.1);
+            yesBtn.style.transform = `scale(${newSize})`;
+            noBtnClickCount++;
+        });
+
+        yesBtn.addEventListener('click', () => {
+            document.getElementById('stage1').style.display = 'none';
+            document.getElementById('stage2').style.display = 'block';
+            resizeCanvas();
+        });
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const playerImg = new Image();
+        const valentineImg = new Image();
+
+        playerImg.src = 'girlfriend.png';
+        valentineImg.src = 'boyfriend.png';
+
+        playerImg.onerror = () => console.log('Player image not found - using fallback');
+        valentineImg.onerror = () => console.log('Valentine image not found - using fallback');
+
+        function resizeCanvas() {
+            const maxWidth = 800;
+            const maxHeight = 600;
+            const width = Math.min(window.innerWidth, maxWidth);
+            const height = Math.min(window.innerHeight, maxHeight);
+            canvas.width = width;
+            canvas.height = height;
+            valentine.x = canvas.width - 100;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+
+        let gameActive = false;
+        let hearts = 3;
+        let keys = {};
+
+        const player = {
+            x: 50,
+            y: 400,
+            width: 60,
+            height: 80,
+            velocityY: 0,
+            velocityX: 0,
+            speed: 3,
+            jumpPower: 18,
+            gravity: 0.5,
+            onGround: false,
+            color: '#ff69b4'
+        };
+
+        const valentine = {
+            x: 700,
+            y: 400,
+            width: 70,
+            height: 90,
+            color: '#4169E1',
+            saved: false
+        };
+
+        let obstacles = [];
+        
+        function createObstacles() {
+            obstacles = [];
+            const spacing = canvas.width / 5;
+            for (let i = 1; i < 5; i++) {
+                obstacles.push({
+                    x: i * spacing,
+                    y: canvas.height - 80,
+                    width: 40,
+                    height: 40,
+                    type: Math.random() > 0.5 ? 'spike' : 'block'
+                });
+            }
+        }
+
+        function drawHeart(x, y, size) {
+            ctx.fillStyle = '#ff1493';
+            ctx.beginPath();
+            ctx.moveTo(x, y + size / 4);
+            ctx.quadraticCurveTo(x, y, x + size / 4, y);
+            ctx.quadraticCurveTo(x + size / 2, y, x + size / 2, y + size / 4);
+            ctx.quadraticCurveTo(x + size / 2, y, x + size * 3/4, y);
+            ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
+            ctx.quadraticCurveTo(x + size, y + size / 2, x + size / 2, y + size);
+            ctx.quadraticCurveTo(x, y + size / 2, x, y + size / 4);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawPlayer() {
+            if (playerImg.complete && playerImg.naturalWidth > 0) {
+                ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.fillStyle = '#ffdbac';
+                ctx.fillRect(player.x + 15, player.y - 15, 30, 30);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(player.x + 20, player.y - 8, 6, 6);
+                ctx.fillRect(player.x + 34, player.y - 8, 6, 6);
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(player.x + 15, player.y - 20, 30, 8);
+            }
+        }
+
+        function drawValentine() {
+            if (valentineImg.complete && valentineImg.naturalWidth > 0) {
+                ctx.drawImage(valentineImg, valentine.x, valentine.y, valentine.width, valentine.height);
+            } else {
+                ctx.fillStyle = valentine.color;
+                ctx.fillRect(valentine.x, valentine.y, valentine.width, valentine.height);
+                ctx.fillStyle = '#ffdbac';
+                ctx.fillRect(valentine.x + 17, valentine.y - 18, 35, 35);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(valentine.x + 23, valentine.y - 11, 7, 7);
+                ctx.fillRect(valentine.x + 40, valentine.y - 11, 7, 7);
+                ctx.fillStyle = '#2C1810';
+                ctx.fillRect(valentine.x + 17, valentine.y - 23, 35, 8);
+            }
+            
+            const heartY = valentine.y - 35 + Math.sin(Date.now() / 300) * 5;
+            drawHeart(valentine.x + 20, heartY, 20);
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obs => {
+                if (obs.type === 'spike') {
+                    ctx.fillStyle = '#8B0000';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x, obs.y + obs.height);
+                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                    ctx.strokeStyle = '#8B4513';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+                }
+            });
+        }
+
+        function drawGround() {
+            const groundY = canvas.height - 40;
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, groundY, canvas.width, 40);
+            ctx.fillStyle = '#32CD32';
+            for (let i = 0; i < canvas.width; i += 20) {
+                ctx.fillRect(i, groundY, 3, 8);
+                ctx.fillRect(i + 7, groundY, 3, 8);
+                ctx.fillRect(i + 14, groundY, 3, 8);
+            }
+        }
+
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            const time = Date.now() / 1000;
+            for (let i = 0; i < 3; i++) {
+                const x = (time * 20 + i * 300) % (canvas.width + 100);
+                const y = 50 + i * 40;
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.arc(x + 20, y, 25, 0, Math.PI * 2);
+                ctx.arc(x + 40, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function updatePlayer() {
+            if (!gameActive) return;
+
+            if (keys['ArrowLeft'] || keys['left']) {
+                player.velocityX = -player.speed;
+            } else if (keys['ArrowRight'] || keys['right']) {
+                player.velocityX = player.speed;
+            } else {
+                player.velocityX *= 0.8;
+            }
+
+            player.x += player.velocityX;
+            player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+
+            player.velocityY += player.gravity;
+            player.y += player.velocityY;
+
+            const groundY = canvas.height - 40 - player.height;
+            if (player.y >= groundY) {
+                player.y = groundY;
+                player.velocityY = 0;
+                player.onGround = true;
+            } else {
+                player.onGround = false;
+            }
+
+            if ((keys['ArrowUp'] || keys['jump']) && player.onGround) {
+                player.velocityY = -player.jumpPower;
+                keys['jump'] = false;
+            }
+
+            obstacles.forEach(obs => {
+                if (player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y) {
+                    
+                    hearts--;
+                    document.getElementById('hearts').textContent = hearts;
+                    
+                    if (hearts <= 0) {
+                        gameOver();
+                    } else {
+                        player.x = 50;
+                        player.y = canvas.height - 140;
+                        player.velocityY = 0;
+                        player.velocityX = 0;
+                    }
+                }
+            });
+
+            if (player.x < valentine.x + valentine.width &&
+                player.x + player.width > valentine.x &&
+                player.y < valentine.y + valentine.height &&
+                player.y + player.height > valentine.y) {
+                
+                if (!valentine.saved) {
+                    valentine.saved = true;
+                    winGame();
+                }
+            }
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawClouds();
+            drawGround();
+            drawObstacles();
+            drawValentine();
+            drawPlayer();
+            updatePlayer();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            document.getElementById('gameStartScreen').style.display = 'none';
+            gameActive = true;
+            hearts = 3;
+            player.x = 50;
+            player.y = canvas.height - 140;
+            player.velocityY = 0;
+            player.velocityX = 0;
+            valentine.saved = false;
+            valentine.x = canvas.width - 100;
+            createObstacles();
+            document.getElementById('hearts').textContent = hearts;
+        }
+
+        function winGame() {
+            gameActive = false;
+            document.getElementById('endScreen').style.display = 'flex';
+        }
+
+        function gameOver() {
+            gameActive = false;
+            alert('NOOOOOOOOOO BAKIT KA NAMATAY </3');
+            location.reload();
+        }
+
+        window.addEventListener('keydown', (e) => { keys[e.key] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+        document.getElementById('leftBtn').addEventListener('touchstart', (e) => { e.preventDefault(); keys['left'] = true; });
+        document.getElementById('leftBtn').addEventListener('touchend', (e) => { e.preventDefault(); keys['left'] = false; });
+        document.getElementById('rightBtn').addEventListener('touchstart', (e) => { e.preventDefault(); keys['right'] = true; });
+        document.getElementById('rightBtn').addEventListener('touchend', (e) => { e.preventDefault(); keys['right'] = false; });
+        document.getElementById('jumpBtn').addEventListener('touchstart', (e) => { e.preventDefault(); if (player.onGround) keys['jump'] = true; });
+        document.getElementById('jumpBtn').addEventListener('touchend', (e) => { e.preventDefault(); keys['jump'] = false; });
+
+        document.getElementById('leftBtn').addEventListener('mousedown', () => keys['left'] = true);
+        document.getElementById('leftBtn').addEventListener('mouseup', () => keys['left'] = false);
+        document.getElementById('rightBtn').addEventListener('mousedown', () => keys['right'] = true);
+        document.getElementById('rightBtn').addEventListener('mouseup', () => keys['right'] = false);
+        document.getElementById('jumpBtn').addEventListener('mousedown', () => { if (player.onGround) keys['jump'] = true; });
+        document.getElementById('jumpBtn').addEventListener('mouseup', () => keys['jump'] = false);
+
+        gameLoop();
+    </script>
+</body>
+</html>
