@@ -22,7 +22,6 @@
             justify-content: center;
         }
 
-        /* Floating hearts background */
         .heart-bg {
             position: fixed;
             font-size: 30px;
@@ -36,7 +35,6 @@
             50% { transform: translateY(-20px) rotate(10deg); }
         }
 
-        /* Stage 1: Initial Question */
         #stage1 {
             text-align: center;
             color: white;
@@ -90,7 +88,6 @@
             position: relative;
         }
 
-        /* Stage 2: Game */
         #stage2 {
             display: none;
             width: 100%;
@@ -100,9 +97,10 @@
 
         #gameCanvas {
             display: block;
-            margin: 0 auto;
+            margin: 80px auto 20px auto;
             background: linear-gradient(180deg, #87CEEB 0%, #FFB6C1 100%);
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 100%;
         }
 
         #ui {
@@ -119,18 +117,18 @@
         }
 
         #controls {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 20px;
+            gap: 15px;
             z-index: 10;
         }
 
         .control-btn {
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             background: rgba(255, 255, 255, 0.9);
             border: 4px solid #ff69b4;
             border-radius: 50%;
@@ -235,7 +233,6 @@
     </style>
 </head>
 <body>
-    <!-- Floating hearts decoration -->
     <div class="heart-bg" style="left: 10%; top: 20%; animation-delay: 0s;">💕</div>
     <div class="heart-bg" style="left: 80%; top: 30%; animation-delay: 1s;">❤️</div>
     <div class="heart-bg" style="left: 20%; top: 70%; animation-delay: 2s;">💖</div>
@@ -256,19 +253,19 @@
         </div>
 
         <div id="gameStartScreen">
-            <h1 class="game-title">💕 SAVE YOUR VALENTINE! 💕</h1>
-            <h2 class="game-subtitle">Jump through obstacles<br>to rescue your prince!</h2>
+            <h1 class="game-title">💕 PARKOUR TO YOUR VALENTINE! 💕</h1>
+            <h2 class="game-subtitle">Jump across platforms!<br>Don't fall in the lava!</h2>
             <button class="start-btn" onclick="startGame()">START ADVENTURE</button>
             <div id="instructions">
                 Use arrow keys or touch buttons<br>
                 ← → to move, ↑ to jump<br>
-                Avoid the obstacles!
+                Don't touch the lava!
             </div>
         </div>
 
         <div id="endScreen">
-            <h1 class="game-title">💝 WE'RE VALENTINES NA YEHEY! 💝</h1>
-            <h2 class="game-subtitle">Thank you baby<br> Check under your bed! ^_^ <span class="heart">❤️</span></h2>
+            <h1 class="game-title">THANK YOU SO MUCH BABY PERO</h1>
+            <h2 class="game-subtitle">Hindi pa kita valentine!<br>Check mo ilalim ng kama <span class="heart">❤️</span></h2>
             <button class="start-btn" onclick="location.reload()">PLAY AGAIN</button>
         </div>
 
@@ -282,7 +279,6 @@
     </div>
 
     <script>
-
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         let noBtnClickCount = 0;
@@ -339,13 +335,18 @@
         valentineImg.onerror = () => console.log('Valentine image not found - using fallback');
 
         function resizeCanvas() {
-            const maxWidth = 800;
-            const maxHeight = 600;
-            const width = Math.min(window.innerWidth, maxWidth);
-            const height = Math.min(window.innerHeight, maxHeight);
+            const width = Math.min(window.innerWidth - 20, 800);
+            const height = Math.min(window.innerHeight - 200, 600);
             canvas.width = width;
-            canvas.height = height;
-            valentine.x = canvas.width - 100;
+            canvas.height = Math.max(height, 450);
+            
+            if (platforms.length > 0) {
+                createPlatforms();
+
+                const lastPlatform = platforms[platforms.length - 1];
+                valentine.x = lastPlatform.x + (lastPlatform.width / 2) - (valentine.width / 2);
+                valentine.y = lastPlatform.y - valentine.height;
+            }
         }
         
         window.addEventListener('resize', resizeCanvas);
@@ -356,41 +357,64 @@
 
         const player = {
             x: 50,
-            y: 400,
+            y: 100,
             width: 60,
             height: 80,
             velocityY: 0,
             velocityX: 0,
-            speed: 3,
-            jumpPower: 18,
-            gravity: 0.5,
+            speed: 6,
+            jumpPower: 13,
+            gravity: 0.6,
             onGround: false,
             color: '#ff69b4'
         };
 
         const valentine = {
             x: 700,
-            y: 400,
+            y: 200,
             width: 70,
             height: 90,
             color: '#4169E1',
             saved: false
         };
 
-        let obstacles = [];
+        let platforms = [];
         
-        function createObstacles() {
-            obstacles = [];
-            const spacing = canvas.width / 5;
-            for (let i = 1; i < 5; i++) {
-                obstacles.push({
-                    x: i * spacing,
-                    y: canvas.height - 80,
-                    width: 40,
-                    height: 40,
-                    type: Math.random() > 0.5 ? 'spike' : 'block'
+        function createPlatforms() {
+            platforms = [];
+            const platformWidth = canvas.width < 500 ? 90 : 100;
+            const numPlatforms = canvas.width < 500 ? 4 : 6;
+            const lavaHeight = 60;
+            const spacing = (canvas.width - 100) / numPlatforms;
+            
+            platforms.push({
+                x: 20,
+                y: canvas.height - lavaHeight - 120,
+                width: 100,
+                height: 20,
+                color: '#8B4513'
+            });
+            
+            for (let i = 1; i < numPlatforms - 1; i++) {
+                const minY = canvas.height - lavaHeight - 200;
+                const maxY = canvas.height - lavaHeight - 100;
+                const randomHeight = minY + Math.random() * (maxY - minY);
+                platforms.push({
+                    x: spacing * i + 30,
+                    y: randomHeight,
+                    width: platformWidth,
+                    height: 20,
+                    color: '#8B4513'
                 });
             }
+            
+            platforms.push({
+                x: canvas.width - 120,
+                y: canvas.height - lavaHeight - 120,
+                width: 100,
+                height: 20,
+                color: '#8B4513'
+            });
         }
 
         function drawHeart(x, y, size) {
@@ -442,44 +466,50 @@
             drawHeart(valentine.x + 20, heartY, 20);
         }
 
-        function drawObstacles() {
-            obstacles.forEach(obs => {
-                if (obs.type === 'spike') {
-                    ctx.fillStyle = '#8B0000';
-                    ctx.beginPath();
-                    ctx.moveTo(obs.x + obs.width / 2, obs.y);
-                    ctx.lineTo(obs.x, obs.y + obs.height);
-                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
-                    ctx.closePath();
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = '#654321';
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                    ctx.strokeStyle = '#8B4513';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+        function drawPlatforms() {
+            platforms.forEach(platform => {
+                ctx.fillStyle = platform.color;
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+                
+                ctx.fillStyle = '#A0522D';
+                for (let i = 0; i < platform.width; i += 15) {
+                    ctx.fillRect(platform.x + i, platform.y + 2, 2, platform.height - 4);
                 }
             });
         }
 
-        function drawGround() {
-            const groundY = canvas.height - 40;
-            ctx.fillStyle = '#228B22';
-            ctx.fillRect(0, groundY, canvas.width, 40);
-            ctx.fillStyle = '#32CD32';
-            for (let i = 0; i < canvas.width; i += 20) {
-                ctx.fillRect(i, groundY, 3, 8);
-                ctx.fillRect(i + 7, groundY, 3, 8);
-                ctx.fillRect(i + 14, groundY, 3, 8);
+        function drawLava() {
+            const lavaY = canvas.height - 60;
+            
+            ctx.fillStyle = '#FF4500';
+            ctx.fillRect(0, lavaY, canvas.width, 60);
+            
+            const time = Date.now() / 200;
+            ctx.fillStyle = '#FF6347';
+            for (let x = 0; x < canvas.width; x += 20) {
+                const wave = Math.sin(time + x / 30) * 8;
+                ctx.fillRect(x, lavaY + wave, 20, 10);
+            }
+            
+            ctx.fillStyle = '#FFD700';
+            for (let x = 0; x < canvas.width; x += 30) {
+                const glow = Math.sin(time * 2 + x / 20) * 5;
+                ctx.fillRect(x, lavaY + 10 + glow, 10, 5);
             }
         }
 
         function drawClouds() {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             const time = Date.now() / 1000;
+            
             for (let i = 0; i < 3; i++) {
                 const x = (time * 20 + i * 300) % (canvas.width + 100);
-                const y = 50 + i * 40;
+                const y = 30 + i * 30;
+                
                 ctx.beginPath();
                 ctx.arc(x, y, 20, 0, Math.PI * 2);
                 ctx.arc(x + 20, y, 25, 0, Math.PI * 2);
@@ -505,39 +535,39 @@
             player.velocityY += player.gravity;
             player.y += player.velocityY;
 
-            const groundY = canvas.height - 40 - player.height;
-            if (player.y >= groundY) {
-                player.y = groundY;
-                player.velocityY = 0;
-                player.onGround = true;
-            } else {
-                player.onGround = false;
-            }
+            player.onGround = false;
+            platforms.forEach(platform => {
+                if (player.velocityY >= 0 &&
+                    player.x + player.width > platform.x &&
+                    player.x < platform.x + platform.width &&
+                    player.y + player.height >= platform.y &&
+                    player.y + player.height <= platform.y + platform.height + 10) {
+                    
+                    player.y = platform.y - player.height;
+                    player.velocityY = 0;
+                    player.onGround = true;
+                }
+            });
 
             if ((keys['ArrowUp'] || keys['jump']) && player.onGround) {
                 player.velocityY = -player.jumpPower;
                 keys['jump'] = false;
             }
 
-            obstacles.forEach(obs => {
-                if (player.x < obs.x + obs.width &&
-                    player.x + player.width > obs.x &&
-                    player.y < obs.y + obs.height &&
-                    player.y + player.height > obs.y) {
-                    
-                    hearts--;
-                    document.getElementById('hearts').textContent = hearts;
-                    
-                    if (hearts <= 0) {
-                        gameOver();
-                    } else {
-                        player.x = 50;
-                        player.y = canvas.height - 140;
-                        player.velocityY = 0;
-                        player.velocityX = 0;
-                    }
+            const lavaY = canvas.height - 60;
+            if (player.y + player.height >= lavaY) {
+                hearts--;
+                document.getElementById('hearts').textContent = hearts;
+                
+                if (hearts <= 0) {
+                    gameOver();
+                } else {
+                    player.x = 50;
+                    player.y = 100;
+                    player.velocityY = 0;
+                    player.velocityX = 0;
                 }
-            });
+            }
 
             if (player.x < valentine.x + valentine.width &&
                 player.x + player.width > valentine.x &&
@@ -553,12 +583,14 @@
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             drawClouds();
-            drawGround();
-            drawObstacles();
+            drawLava();
+            drawPlatforms();
             drawValentine();
             drawPlayer();
             updatePlayer();
+            
             requestAnimationFrame(gameLoop);
         }
 
@@ -567,12 +599,16 @@
             gameActive = true;
             hearts = 3;
             player.x = 50;
-            player.y = canvas.height - 140;
+            player.y = 100;
             player.velocityY = 0;
             player.velocityX = 0;
             valentine.saved = false;
-            valentine.x = canvas.width - 100;
-            createObstacles();
+            createPlatforms();
+            
+            const lastPlatform = platforms[platforms.length - 1];
+            valentine.x = lastPlatform.x + (lastPlatform.width / 2) - (valentine.width / 2);
+            valentine.y = lastPlatform.y - valentine.height;
+            
             document.getElementById('hearts').textContent = hearts;
         }
 
@@ -583,7 +619,7 @@
 
         function gameOver() {
             gameActive = false;
-            alert('NOOOOOOOOOO BAKIT KA NAMATAY </3');
+            alert('Hala baby naluto ka na :(');
             location.reload();
         }
 
